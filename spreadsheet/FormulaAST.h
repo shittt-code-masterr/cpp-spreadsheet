@@ -1,49 +1,52 @@
-#pragma once
+  #pragma once
 
-#include "FormulaLexer.h"
-#include "common.h"
+  #include "FormulaLexer.h"
+  #include "common.h"
 
-#include <forward_list>
-#include <functional>
-#include <stdexcept>
+  #include <forward_list>
+  #include <functional>
+  #include <stdexcept>
 
-namespace ASTImpl {
-class Expr;
-}
+  typedef std::function<double(const Position* cell)> CellTranclatorLambda;
 
-class ParsingError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
+  namespace ASTImpl {
+  class Expr;
+  }
 
-class FormulaAST {
-public:
-    explicit FormulaAST(std::unique_ptr<ASTImpl::Expr> root_expr,
-                        std::forward_list<Position> cells);
-    FormulaAST(FormulaAST&&) = default;
-    FormulaAST& operator=(FormulaAST&&) = default;
-    ~FormulaAST();
+  class ParsingError : public std::runtime_error {
+      using std::runtime_error::runtime_error;
+  };
 
-    double Execute(/*добавьте нужные аргументы*/ args) const;
-    void PrintCells(std::ostream& out) const;
-    void Print(std::ostream& out) const;
-    void PrintFormula(std::ostream& out) const;
+  class FormulaAST {
+  public:
+      explicit FormulaAST(std::unique_ptr<ASTImpl::Expr> root_expr,
+                          std::forward_list<Position> cells);
+      FormulaAST(FormulaAST&&) = default;
+      FormulaAST& operator=(FormulaAST&&) = default;
+      ~FormulaAST();
 
-    std::forward_list<Position>& GetCells() {
-        return cells_;
-    }
+      double Execute(CellTranclatorLambda args) const;
+      void PrintCells(std::ostream& out) const;
+      void Print(std::ostream& out) const;
+      void PrintFormula(std::ostream& out) const;
 
-    const std::forward_list<Position>& GetCells() const {
-        return cells_;
-    }
+      std::forward_list<Position>& GetCells() {
+          return cells_;
+      }
 
-private:
-    std::unique_ptr<ASTImpl::Expr> root_expr_;
+      const std::forward_list<Position>& GetCells() const {
+          return cells_;
+      }
 
-    // physically stores cells so that they can be
-    // efficiently traversed without going through
-    // the whole AST
-    std::forward_list<Position> cells_;
-};
+  private:
+      std::unique_ptr<ASTImpl::Expr> root_expr_;
 
-FormulaAST ParseFormulaAST(std::istream& in);
-FormulaAST ParseFormulaAST(const std::string& in_str);
+      // physically stores cells so that they can be
+      // efficiently traversed without going through
+      // the whole AST
+      std::forward_list<Position> cells_;
+  };
+
+  FormulaAST ParseFormulaAST(std::istream& in);
+  FormulaAST ParseFormulaAST(const std::string& in_str);
+  
